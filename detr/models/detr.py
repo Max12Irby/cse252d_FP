@@ -40,6 +40,8 @@ class DETR(nn.Module):
         self.input_proj = nn.Conv2d(backbone.num_channels, hidden_dim, kernel_size=1)
         self.backbone = backbone
         self.aux_loss = aux_loss
+        
+        self.hidden_dim_for_debug = transformer.d_model
 
     def forward(self, samples: NestedTensor):
         """ The forward expects a NestedTensor, which consists of:
@@ -59,10 +61,14 @@ class DETR(nn.Module):
         if isinstance(samples, (list, torch.Tensor)):
             samples = nested_tensor_from_tensor_list(samples)
         features, pos = self.backbone(samples)
-        print('Length of features backbone: ', len(features))
-        print('Features[0].shape: ', features[0].tensors.shape)
+        print('----DETR.PY----')
+        
+        print('backbone output shape in detr.py: ', features[0].tensors.shape)
+        
+        print(f'INPUT PROJECTION FROM SHAPE {self.backbone.num_channels} TO {self.hidden_dim_for_debug}')
 
         src, mask = features[-1].decompose()
+        print('Verifying unflattened shape of input to DETR encoder: ', self.input_proj(src).shape)
         assert mask is not None
         hs = self.transformer(self.input_proj(src), mask, self.query_embed.weight, pos[-1])[0]
 
@@ -319,10 +325,8 @@ def build(args):
         num_classes = 250
     device = torch.device(args.device)
     
-    print('Building backbone...')
     backbone = build_backbone(args)
-    print('Backbone built')
-
+    
     transformer = build_transformer(args)
     model = DETR(
         backbone,

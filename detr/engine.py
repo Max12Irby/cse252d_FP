@@ -34,10 +34,11 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
             break
         samples = samples.to(device)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-
-        print('Samples shape: ', samples.tensors.shape)
+        print('----ENGINE.PY----')
+        print('Input to entire DETR model samples shape: ', samples.tensors.shape)
         outputs = model(samples)
-        print('Outputs shape: ', samples.tensors.shape)
+        print('----ENGINE.PY----')
+        print('Output from entire DETR model shape: ', samples.tensors.shape)
         loss_dict = criterion(outputs, targets)
         weight_dict = criterion.weight_dict
         losses = sum(loss_dict[k] * weight_dict[k] for k in loss_dict.keys() if k in weight_dict)
