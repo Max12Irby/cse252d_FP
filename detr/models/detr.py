@@ -59,6 +59,8 @@ class DETR(nn.Module):
         if isinstance(samples, (list, torch.Tensor)):
             samples = nested_tensor_from_tensor_list(samples)
         features, pos = self.backbone(samples)
+        print('Length of features backbone: ', len(features))
+        print('Features[0].shape: ', features[0].tensors.shape)
 
         src, mask = features[-1].decompose()
         assert mask is not None
@@ -316,7 +318,10 @@ def build(args):
         # max_obj_id + 1, but the exact value doesn't really matter
         num_classes = 250
     device = torch.device(args.device)
+    
+    print('Building backbone...')
     backbone = build_backbone(args)
+    print('Backbone built')
 
     transformer = build_transformer(args)
     model = DETR(

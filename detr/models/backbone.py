@@ -77,6 +77,8 @@ class BackboneBase(nn.Module):
             assert m is not None
             mask = F.interpolate(m[None].float(), size=x.shape[-2:]).to(torch.bool)[0]
             out[name] = NestedTensor(x, mask)
+            
+        
         return out
 
 
@@ -105,6 +107,10 @@ class Joiner(nn.Sequential):
             out.append(x)
             # position encoding
             pos.append(self[1](x).to(x.tensors.dtype))
+            
+            
+        print('length of positional embedding: ', len(pos))
+        print('shape of positional embedding: ', pos[0].shape)
 
         return out, pos
 
