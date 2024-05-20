@@ -117,9 +117,7 @@ def main(args):
     torch.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
-    print('heere')
     model, criterion, postprocessors = build_model(args)
-    print('heere2')
     model.to(device)
 
     print('Setting up model distribution')

@@ -316,11 +316,9 @@ def build(args):
         # max_obj_id + 1, but the exact value doesn't really matter
         num_classes = 250
     device = torch.device(args.device)
-    print('here1')
     backbone = build_backbone(args)
 
     transformer = build_transformer(args)
-    print('here2')
     model = DETR(
         backbone,
         transformer,
@@ -333,7 +331,6 @@ def build(args):
     matcher = build_matcher(args)
     weight_dict = {'loss_ce': 1, 'loss_bbox': args.bbox_loss_coef}
     weight_dict['loss_giou'] = args.giou_loss_coef
-    print('here3')
     if args.masks:
         weight_dict["loss_mask"] = args.mask_loss_coef
         weight_dict["loss_dice"] = args.dice_loss_coef
@@ -343,7 +340,6 @@ def build(args):
         for i in range(args.dec_layers - 1):
             aux_weight_dict.update({k + f'_{i}': v for k, v in weight_dict.items()})
         weight_dict.update(aux_weight_dict)
-    print('here4')
     losses = ['labels', 'boxes', 'cardinality']
     if args.masks:
         losses += ["masks"]
@@ -351,9 +347,7 @@ def build(args):
                              eos_coef=args.eos_coef, losses=losses)
     
     criterion.to(device)
-    print('here5')
     postprocessors = {'bbox': PostProcess()}
-    print('here6')
     if args.masks:
         postprocessors['segm'] = PostProcessSegm()
         if args.dataset_file == "coco_panoptic":
