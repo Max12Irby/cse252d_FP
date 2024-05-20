@@ -108,7 +108,7 @@ def main(args):
 
     if args.frozen_weights is not None:
         assert args.masks, "Frozen training is meant for segmentation only"
-    print(args)
+    print('Args: ', args)
 
     device = torch.device(args.device)
 
@@ -117,12 +117,16 @@ def main(args):
     torch.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
-
+    print('heere')
     model, criterion, postprocessors = build_model(args)
+    print('heere2')
     model.to(device)
+
+    print('Setting up model distribution')
 
     model_without_ddp = model
     if args.distributed:
+        print('Distributed flag set to True')
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
         model_without_ddp = model.module
     n_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
