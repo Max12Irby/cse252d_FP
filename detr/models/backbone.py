@@ -98,6 +98,7 @@ class Backbone(BackboneBase):
 # We added this class for a custom Swin backbone
 class SwinBackbone(nn.Module):
     def __init__(self):
+        super().__init__()
         from torchvision import models
         self.model = models.swin_t(weights=models.Swin_T_Weights.IMAGENET1K_V1)
         # the output of Swin is a 1000-d vector for classification so we just project it to 2048
