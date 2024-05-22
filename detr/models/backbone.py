@@ -118,6 +118,7 @@ class Joiner(nn.Sequential):
 
     def forward(self, tensor_list: NestedTensor):
         xs = self[0](tensor_list)
+        print('type of xs: ', type(xs))
         out: List[NestedTensor] = []
         pos = []
         for name, x in xs.items():
