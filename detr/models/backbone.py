@@ -103,11 +103,12 @@ class SwinBackbone(nn.Module):
         self.model = models.swin_t(weights=models.Swin_T_Weights.IMAGENET1K_V1)
         # the output of Swin is a 1000-d vector for classification so we just project it to 2048
         self.linear = nn.Linear(1000, 2048)
+        self.num_channels = 2048
         
     def forward(self, x):
         # the expected input of DETR is [2, 2048, H, W] so we
         # just change [2, 2048] to [2, 2048, 1, 1]
-        return self.linear(self.model(x)).unsqueeze(-1).unsqueeze(-1)
+        return self.linear(self.model(x.tensors)).unsqueeze(-1).unsqueeze(-1)
         
 
 
