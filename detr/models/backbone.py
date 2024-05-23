@@ -102,13 +102,21 @@ class SwinBackbone(nn.Module):
         from torchvision import models
         self.model = models.swin_t(weights=models.Swin_T_Weights.IMAGENET1K_V1)
         # the output of Swin is a 1000-d vector for classification so we just project it to 2048
-        self.linear = nn.Linear(1000, 2048)
-        self.num_channels = 2048
+        self.num_channels = 768
         
-    def forward(self, x):
+    def forward(self, tensor_list):
         # the expected input of DETR is [2, 2048, H, W] so we
         # just change [2, 2048] to [2, 2048, 1, 1]
-        return self.linear(self.model(x)).unsqueeze(-1).unsqueeze(-1)
+        #return self.linear(self.model(x.tensors)).unsqueeze(-1).unsqueeze(-1)
+        xs = {'default': self.model.permute(self.model.norm(self.model.features(tensor_list.tensors)))}
+        out:Dict[str, NestedTensor] = {}
+        for name, x in xs.items():
+            m = tensor_list.mask
+            assert m is not None
+            mask = F.interpolate(m[None].float(), size = x.shape[-2:]).to(torch.bool)[0]
+            out[name] = NestedTensor(x, mask)
+            
+        return out
         
 
 
@@ -121,6 +129,7 @@ class Joiner(nn.Sequential):
         print('type of xs: ', type(xs))
         out: List[NestedTensor] = []
         pos = []
+        breakpoint()
         for name, x in xs.items():
             out.append(x)
             # position encoding
