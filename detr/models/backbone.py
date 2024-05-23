@@ -108,7 +108,7 @@ class SwinBackbone(nn.Module):
     def forward(self, x):
         # the expected input of DETR is [2, 2048, H, W] so we
         # just change [2, 2048] to [2, 2048, 1, 1]
-        return self.linear(self.model(x.tensors)).unsqueeze(-1).unsqueeze(-1)
+        return self.linear(self.model(x)).unsqueeze(-1).unsqueeze(-1)
         
 
 
