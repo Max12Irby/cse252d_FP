@@ -634,9 +634,9 @@ class SwinTransformer(nn.Module):
         self._freeze_stages()
 
 # Config file module like:
-def build_swin(config_module_name='swin_configs.mask_rcnn_swin_tiny_patch4_window7_mstrain_480-800_adamw_1x_coco',
-               pretrained_file_path='./swin_checkpoints/mask_rcnn_swin_tiny_patch4_window7_1x.pth'):
-    config = import_module(config_module_name)
+def build_swin(config_module_name='.swin_configs.mask_rcnn_swin_tiny_patch4_window7_mstrain_480-800_adamw_1x_coco', package_name='models',
+               pretrained_file_path='models/swin_checkpoints/mask_rcnn_swin_tiny_patch4_window7_1x.pth'):
+    config = import_module(config_module_name, package=package_name)
     swin_model = SwinTransformer(out_indices=(3,), **config.model['backbone'])
     blank_state_dict = swin_model.state_dict()
     pretrained_info = torch.load(pretrained_file_path)
