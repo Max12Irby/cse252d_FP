@@ -52,15 +52,15 @@ class Transformer(nn.Module):
         query_embed = query_embed.unsqueeze(1).repeat(1, bs, 1)
         mask = mask.flatten(1)
         
-        print('----TRANSFORMER.PY----')
-        print('Squashing happens here')
+#         print('----TRANSFORMER.PY----')
+#         print('Squashing happens here')
         
-        print(f'Shape of input to DETR encoder: {src.shape}, H,W dimensions should have been flattened')
-        print('Shape of pos emb to DETR encoder: ', src.shape)
+#         print(f'Shape of input to DETR encoder: {src.shape}, H,W dimensions should have been flattened')
+#         print('Shape of pos emb to DETR encoder: ', src.shape)
 
         tgt = torch.zeros_like(query_embed)
         memory = self.encoder(src, src_key_padding_mask=mask, pos=pos_embed)
-        print('Shape of encoder output: ', memory.shape)
+#         print('Shape of encoder output: ', memory.shape)
         hs = self.decoder(tgt, memory, memory_key_padding_mask=mask,
                           pos=pos_embed, query_pos=query_embed)
         return hs.transpose(1, 2), memory.permute(1, 2, 0).view(bs, c, h, w)

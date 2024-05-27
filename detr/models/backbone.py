@@ -126,22 +126,21 @@ class Joiner(nn.Sequential):
 
     def forward(self, tensor_list: NestedTensor):
         xs = self[0](tensor_list)
-        print('type of xs: ', type(xs))
+#         print('type of xs: ', type(xs))
         out: List[NestedTensor] = []
         pos = []
-        breakpoint()
         for name, x in xs.items():
             out.append(x)
             # position encoding
             pos.append(self[1](x).to(x.tensors.dtype))
             
-        print('----BACKBONE.PY----')
+#         print('----BACKBONE.PY----')
             
-        print('length of positional embedding: ', len(pos))
-        print('shape of positional embedding: ', pos[0].shape)
+#         print('length of positional embedding: ', len(pos))
+#         print('shape of positional embedding: ', pos[0].shape)
         
-        print('length of out in Joiner: ', len(out))
-        print(f'shape of backbone output from Joiner: {out[0].tensors.shape}, H,W dimensions should have reduced by factor of 32')
+#         print('length of out in Joiner: ', len(out))
+#         print(f'shape of backbone output from Joiner: {out[0].tensors.shape}, H,W dimensions should have reduced by factor of 32')
         return out, pos
 
 
