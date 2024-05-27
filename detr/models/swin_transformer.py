@@ -648,7 +648,8 @@ def build_swin(config_module_name='.swin_configs.mask_rcnn_swin_tiny_patch4_wind
             # get rid of 'backbone.' string
             k_new = k[k.index('.')+1:]
             if k_new not in blank_state_dict.keys():
-                print("Key not in Swin model:", k_new)  # Should be weights relating to norm0, norm1, norm2
+                if k_new not in ['norm0.weight', 'norm0.bias', 'norm1.weight', 'norm1.bias', 'norm2.weight', 'norm2.bias']:
+                    print("Key not in Swin model:", k_new)  # Only weights missing should relate to norm0, norm1, norm2
             else:
                 copied_state_dict[k_new] = v
     swin_model.load_state_dict(copied_state_dict)
