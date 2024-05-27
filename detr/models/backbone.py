@@ -14,7 +14,7 @@ from typing import Dict, List
 from util.misc import NestedTensor, is_main_process
 
 from .position_encoding import build_position_encoding
-
+from .swin_transformer import build_swin
 
 class FrozenBatchNorm2d(torch.nn.Module):
     """
@@ -99,8 +99,9 @@ class Backbone(BackboneBase):
 class SwinBackbone(nn.Module):
     def __init__(self):
         super().__init__()
-        from torchvision import models
-        self.model = models.swin_t(weights=models.Swin_T_Weights.IMAGENET1K_V1)
+        # from torchvision import models
+        #self.model = models.swin_t(weights=models.Swin_T_Weights.IMAGENET1K_V1)
+        self.model = build_swin()
         # the output of Swin is a 1000-d vector for classification so we just project it to 2048
         self.num_channels = 768
         
@@ -108,7 +109,7 @@ class SwinBackbone(nn.Module):
         # the expected input of DETR is [2, 2048, H, W] so we
         # just change [2, 2048] to [2, 2048, 1, 1]
         #return self.linear(self.model(x.tensors)).unsqueeze(-1).unsqueeze(-1)
-        xs = {'default': self.model.permute(self.model.norm(self.model.features(tensor_list.tensors)))}
+        xs = {'default': self.model(tensor_list.tensors)}
         out:Dict[str, NestedTensor] = {}
         for name, x in xs.items():
             m = tensor_list.mask
@@ -126,14 +127,16 @@ class Joiner(nn.Sequential):
 
     def forward(self, tensor_list: NestedTensor):
         xs = self[0](tensor_list)
-#         print('type of xs: ', type(xs))
+        #print('type of xs: ', type(xs))
         out: List[NestedTensor] = []
         pos = []
+        #breakpoint()
         for name, x in xs.items():
             out.append(x)
             # position encoding
             pos.append(self[1](x).to(x.tensors.dtype))
             
+<<<<<<< HEAD
 #         print('----BACKBONE.PY----')
             
 #         print('length of positional embedding: ', len(pos))
@@ -141,6 +144,15 @@ class Joiner(nn.Sequential):
         
 #         print('length of out in Joiner: ', len(out))
 #         print(f'shape of backbone output from Joiner: {out[0].tensors.shape}, H,W dimensions should have reduced by factor of 32')
+=======
+        #print('----BACKBONE.PY----')
+            
+        #print('length of positional embedding: ', len(pos))
+        #print('shape of positional embedding: ', pos[0].shape)
+        
+        #print('length of out in Joiner: ', len(out))
+        #print(f'shape of backbone output from Joiner: {out[0].tensors.shape}, H,W dimensions should have reduced by factor of 32')
+>>>>>>> 4165d1e97bb6edc7dc6049849f6c0392e3776e59
         return out, pos
 
 
