@@ -1,0 +1,1 @@
+Configs and pretrained weights can be found at https://github.com/SwinTransformer/Swin-Transformer-Object-Detection/tree/master?tab=readme-ov-file#results-and-models
