@@ -187,14 +187,15 @@ def main(args):
 
     # get the pretrained model and load it into our model
     model_url = "https://dl.fbaipublicfiles.com/detr/detr-r50-e632da11.pth"
-    print("here")
     pre_weights = torch.hub.load_state_dict_from_url(model_url, map_location='cpu', check_hash=True)
-    print("here2")
-    model_without_ddp.load_state_dict(pre_weights['model'], strict=False)
-    print("here3")
-    print("Model's state_dict:")
-    for param_tensor in model_without_ddp.state_dict():
-        print(param_tensor, "\t", model_without_ddp.state_dict()[param_tensor].size())
+    #model_without_ddp.load_state_dict(pre_weights['model'], strict=False)
+    # must load state dict with custom loop because input_proj dims are different
+    copied_state_dict = {}
+    for k, v in pre_weights['model'].items():
+        # Only want swin-related weights
+        if k != "input_proj.weight" and k != "input_proj.bias":
+            copied_state_dict[k] = v
+    model_without_ddp.load_state_dict(copied_state_dict, strict=False)
     
     
     if args.eval:

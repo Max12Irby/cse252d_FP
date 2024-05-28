@@ -358,7 +358,6 @@ def build(args):
     
     
     criterion.to(device)
-    print("almost done building model")
     postprocessors = {'bbox': PostProcess()}
     if args.masks:
         postprocessors['segm'] = PostProcessSegm()
