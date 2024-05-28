@@ -117,7 +117,9 @@ def main(args):
     torch.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
+    print("Building model")
     model, criterion, postprocessors = build_model(args)
+    print("Built")
     model.to(device)
 
     print('Setting up model distribution')
@@ -183,6 +185,19 @@ def main(args):
             lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
             args.start_epoch = checkpoint['epoch'] + 1
 
+    # get the pretrained model and load it into our model
+    model_url = "https://dl.fbaipublicfiles.com/detr/detr-r50-e632da11.pth"
+    pre_weights = torch.hub.load_state_dict_from_url(model_url, map_location='cpu', check_hash=True)
+    #model_without_ddp.load_state_dict(pre_weights['model'], strict=False)
+    # must load state dict with custom loop because input_proj dims are different
+    copied_state_dict = {}
+    for k, v in pre_weights['model'].items():
+        # Only want swin-related weights
+        if k != "input_proj.weight" and k != "input_proj.bias":
+            copied_state_dict[k] = v
+    model_without_ddp.load_state_dict(copied_state_dict, strict=False)
+    
+    
     if args.eval:
         test_stats, coco_evaluator = evaluate(model, criterion, postprocessors,
                                               data_loader_val, base_ds, device, args.output_dir)

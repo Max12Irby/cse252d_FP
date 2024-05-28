@@ -356,6 +356,8 @@ def build(args):
     criterion = SetCriterion(num_classes, matcher=matcher, weight_dict=weight_dict,
                              eos_coef=args.eos_coef, losses=losses)
     
+    
+    
     criterion.to(device)
     postprocessors = {'bbox': PostProcess()}
     if args.masks:
