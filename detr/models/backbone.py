@@ -136,15 +136,6 @@ class Joiner(nn.Sequential):
             # position encoding
             pos.append(self[1](x).to(x.tensors.dtype))
             
-<<<<<<< HEAD
-#         print('----BACKBONE.PY----')
-            
-#         print('length of positional embedding: ', len(pos))
-#         print('shape of positional embedding: ', pos[0].shape)
-        
-#         print('length of out in Joiner: ', len(out))
-#         print(f'shape of backbone output from Joiner: {out[0].tensors.shape}, H,W dimensions should have reduced by factor of 32')
-=======
         #print('----BACKBONE.PY----')
             
         #print('length of positional embedding: ', len(pos))
