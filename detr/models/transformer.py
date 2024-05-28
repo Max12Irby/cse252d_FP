@@ -52,7 +52,6 @@ class Transformer(nn.Module):
         query_embed = query_embed.unsqueeze(1).repeat(1, bs, 1)
         mask = mask.flatten(1)
         
-        #print('----TRANSFORMER.PY----')
         #print('Squashing happens here')
         
         #print(f'Shape of input to DETR encoder: {src.shape}, H,W dimensions should have been flattened')
