@@ -117,7 +117,9 @@ def main(args):
     torch.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
+    print("Building model")
     model, criterion, postprocessors = build_model(args)
+    print("Built")
     model.to(device)
 
     print('Setting up model distribution')
@@ -183,6 +185,18 @@ def main(args):
             lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
             args.start_epoch = checkpoint['epoch'] + 1
 
+    # get the pretrained model and load it into our model
+    model_url = "https://dl.fbaipublicfiles.com/detr/detr-r50-e632da11.pth"
+    print("here")
+    pre_weights = torch.hub.load_state_dict_from_url(model_url, map_location='cpu', check_hash=True)
+    print("here2")
+    model_without_ddp.load_state_dict(pre_weights['model'], strict=False)
+    print("here3")
+    print("Model's state_dict:")
+    for param_tensor in model_without_ddp.state_dict():
+        print(param_tensor, "\t", model_without_ddp.state_dict()[param_tensor].size())
+    
+    
     if args.eval:
         test_stats, coco_evaluator = evaluate(model, criterion, postprocessors,
                                               data_loader_val, base_ds, device, args.output_dir)
