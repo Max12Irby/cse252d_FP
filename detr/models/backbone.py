@@ -143,7 +143,6 @@ class Joiner(nn.Sequential):
         
         #print('length of out in Joiner: ', len(out))
         #print(f'shape of backbone output from Joiner: {out[0].tensors.shape}, H,W dimensions should have reduced by factor of 32')
->>>>>>> 4165d1e97bb6edc7dc6049849f6c0392e3776e59
         return out, pos
 
 
