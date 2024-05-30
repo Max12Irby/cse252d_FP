@@ -246,7 +246,7 @@ def main(args):
                     'model': model_without_ddp.state_dict(),
                     'optimizer': optimizer.state_dict(),
                     'lr_scheduler': lr_scheduler.state_dict(),
-                    'epoch': epoch,
+                    'epoch': epoch+args.start_epoch,
                     'args': args,
                 }, checkpoint_path)
 
@@ -256,7 +256,7 @@ def main(args):
 
         log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
                      **{f'test_{k}': v for k, v in test_stats.items()},
-                     'epoch': epoch,
+                     'epoch': epoch+args.start_epoch,
                      'n_parameters': n_parameters}
         print(f"Saving performance statistics to {output_dir}/log.txt")
         if args.output_dir and utils.is_main_process():
