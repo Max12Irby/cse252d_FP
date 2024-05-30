@@ -1,1 +1,1 @@
-cd cse252d_FP/detr && python main.py --coco_path /datasets/COCO-2017/ --batch_size 2 --epochs 1 --output_dir ./output_encoder --no_encoder > lastrun-encoder.log 2>&1
+cd cse252d_FP/detr && python main.py --coco_path /datasets/COCO-2017/ --batch_size 2 --epochs 1 --output_dir ./output_encoder --no_encoder --resume_from_last > lastrun-encoder.log 2>&1

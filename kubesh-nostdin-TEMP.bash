@@ -27,7 +27,7 @@ if [ $# == 0 ]; then
 	set -- /bin/bash
 fi
 
-exec_flags=""
+exec_flags="-c c1"
 if [ "$KUBESH_NO_TTY" ]; then
 	exec_flags=""
 fi
