@@ -228,12 +228,13 @@ def main(args):
     print("Start training")
     start_time = time.time()
     for epoch in range(args.epochs): #range(args.start_epoch, args.epochs):
-        
+        epoch_start = time.time()
         if args.distributed:
             sampler_train.set_epoch(epoch)
         train_stats = train_one_epoch(
             model, criterion, data_loader_train, optimizer, device, epoch,
             args.clip_max_norm)
+        epoch_end = time.time()
         lr_scheduler.step()
         if args.output_dir:
             checkpoint_paths = [output_dir / 'checkpoint.pth']
@@ -257,7 +258,8 @@ def main(args):
         log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
                      **{f'test_{k}': v for k, v in test_stats.items()},
                      'epoch': epoch+args.start_epoch,
-                     'n_parameters': n_parameters}
+                     'n_parameters': n_parameters,
+                     'epoch_time': epoch_end-epoch_start}
         print(f"Saving performance statistics to {output_dir}/log.txt")
         if args.output_dir and utils.is_main_process():
             with (output_dir / "log.txt").open("a") as f:
