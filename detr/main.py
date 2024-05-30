@@ -115,8 +115,20 @@ def main(args):
 
     device = torch.device(args.device)
 
+    output_dir = Path(args.output_dir)
+    output_dir = output_dir / datetime.datetime.now().strftime("%y%m%d-%H%M%S")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     # fix the seed for reproducibility
     seed = args.seed + utils.get_rank()
+    if args.resume_from_last: # add start_epoch to seed
+        prev_output_dirs = sorted(os.listdir(args.output_dir))
+        most_recent_log_file = f'{args.output_dir}/{prev_output_dirs[-2]}/log.txt'
+        with open(most_recent_log_file, 'r') as f:
+            log_dict = json.loads(f.read())
+            args.start_epoch = log_dict['epoch'] + 1
+            print(f"Reading start epoch as {args.start_epoch}")
+            seed += args.start_epoch
     torch.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
@@ -175,9 +187,6 @@ def main(args):
         checkpoint = torch.load(args.frozen_weights, map_location='cpu')
         model_without_ddp.detr.load_state_dict(checkpoint['model'])
 
-    output_dir = Path(args.output_dir)
-    output_dir = output_dir / datetime.datetime.now().strftime("%y%m%d-%H%M%S")
-    output_dir.mkdir(parents=True, exist_ok=True)
 
     if args.resume:
         if args.resume.startswith('https'):
