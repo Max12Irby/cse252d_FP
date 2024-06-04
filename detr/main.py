@@ -102,6 +102,8 @@ def get_args_parser():
     parser.add_argument('--world_size', default=1, type=int,
                         help='number of distributed processes')
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
+    parser.add_argument('--analyze_inference', default=None, help='flag to determine if we show results on examples and time spent')
+    parser.add_argument('--inference_dir', default=None, help='dir to place inference results')
     return parser
 
 
@@ -288,6 +290,23 @@ def main(args):
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     print('Training time {}'.format(total_time_str))
+    
+    # analyze the inference results of the model
+    if args.analyze_inference:
+        os.mkdir('inference_results')
+        os.mkdir(os.path.join('inference_results', args.inference_dir))
+        total_time = 0
+        for x in data_loader_val:
+            start_time = time.time()
+            out = model(x)
+            total_time += time.time() - start_time
+            print(out)
+            
+        
+        total_time_str = str(datetime.timedelta(seconds=int(total_time)))
+            
+            
+        
 
 
 if __name__ == '__main__':
