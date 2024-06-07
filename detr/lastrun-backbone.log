@@ -1,0 +1,11 @@
+Not using distributed mode
+git:
+  sha: 496696585fd0ffa262cc4e9465acab8b9b7cb038, status: clean, branch: main
+
+Args:  Namespace(lr=0.0001, lr_backbone=1e-05, batch_size=2, weight_decay=0.0001, epochs=1, lr_drop=200, clip_max_norm=0.1, frozen_weights=None, backbone='resnet50', dilation=False, position_embedding='sine', enc_layers=6, dec_layers=6, dim_feedforward=2048, hidden_dim=256, dropout=0.1, nheads=8, num_queries=100, pre_norm=False, no_encoder=False, masks=False, aux_loss=True, set_cost_class=1, set_cost_bbox=5, set_cost_giou=2, mask_loss_coef=1, dice_loss_coef=1, bbox_loss_coef=5, giou_loss_coef=2, eos_coef=0.1, dataset_file='coco', coco_path='/datasets/COCO-2017/', coco_panoptic_path=None, remove_difficult=False, output_dir='./output_backbone', device='cuda', seed=42, resume='', resume_from_last=True, start_epoch=0, eval=False, num_workers=2, world_size=1, dist_url='env://', distributed=False)
+Traceback (most recent call last):
+  File "/home/vpatro/cse252d_FP/detr/main.py", line 298, in <module>
+    main(args)
+  File "/home/vpatro/cse252d_FP/detr/main.py", line 127, in main
+    with open(most_recent_log_file, 'r') as f:
+FileNotFoundError: [Errno 2] No such file or directory: './output_backbone/240605-164922/log.txt'
