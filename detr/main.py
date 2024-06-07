@@ -17,6 +17,63 @@ from datasets import build_dataset, get_coco_api_from_dataset
 from engine import evaluate, train_one_epoch
 from models import build_model
 
+import matplotlib.pyplot as plt
+
+with open("coco_labels-91.txt", "r") as grilled_cheese:
+	lines = grilled_cheese.readlines()
+coco_idx_to_label = lines
+coco_idx_to_label.append("No object")
+print(len(coco_idx_to_label), coco_idx_to_label[0], coco_idx_to_label[-1])
+
+# COCO classes
+CLASSES = [
+    'N/A', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+    'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A',
+    'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',
+    'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack',
+    'umbrella', 'N/A', 'N/A', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
+    'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove',
+    'skateboard', 'surfboard', 'tennis racket', 'bottle', 'N/A', 'wine glass',
+    'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
+    'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
+    'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table', 'N/A',
+    'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
+    'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
+    'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
+    'toothbrush'
+]
+
+# colors for visualization
+COLORS = [[0.000, 0.447, 0.741], [0.850, 0.325, 0.098], [0.929, 0.694, 0.125],
+          [0.494, 0.184, 0.556], [0.466, 0.674, 0.188], [0.301, 0.745, 0.933]]
+
+def box_cxcywh_to_xyxy(x):
+    x_c, y_c, w, h = x.unbind(1)
+    b = [(x_c - 0.5 * w), (y_c - 0.5 * h),
+         (x_c + 0.5 * w), (y_c + 0.5 * h)]
+    return torch.stack(b, dim=1)
+
+def rescale_bboxes(out_bbox, size):
+    img_w, img_h = size
+    b = box_cxcywh_to_xyxy(out_bbox)
+    b = b * torch.tensor([img_w, img_h, img_w, img_h], dtype=torch.float32, device='cuda')
+    return b
+
+def plot_results(pil_img, prob, boxes):
+    fig = plt.figure(figsize=(16,10))
+    plt.imshow(pil_img)
+    ax = plt.gca()
+    colors = COLORS * 100
+    for p, (xmin, ymin, xmax, ymax), c in zip(prob, boxes.tolist(), colors):
+        ax.add_patch(plt.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin,
+                                   fill=False, color=c, linewidth=3))
+        cl = p.argmax()
+        text = f'{CLASSES[cl]}: {p[cl]:0.2f}'
+        ax.text(xmin, ymin, text, fontsize=15,
+                bbox=dict(facecolor='yellow', alpha=0.5))
+    plt.axis('off')
+    return fig
+
 
 def get_args_parser():
     parser = argparse.ArgumentParser('Set transformer detector', add_help=False)
@@ -102,6 +159,8 @@ def get_args_parser():
     parser.add_argument('--world_size', default=1, type=int,
                         help='number of distributed processes')
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
+    parser.add_argument('--analyze_inference', action="store_true", help='flag to determine if we show results on examples and time spent')
+    parser.add_argument('--inference_dir', default=None, help='dir to place inference results')
     return parser
 
 
@@ -288,6 +347,57 @@ def main(args):
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     print('Training time {}'.format(total_time_str))
+    
+    # analyze the inference results of the model including time and detection visualizations
+    if args.analyze_inference:
+        from torchvision.utils import draw_bounding_boxes
+        from torchvision.utils import save_image
+        from tqdm import tqdm
+        model.eval()
+        # make output directories
+        os.makedirs('inference_results', exist_ok=True)
+        os.makedirs(os.path.join('inference_results', args.inference_dir), exist_ok=True)
+        # track inference time for each example
+        total_time = 0
+        error_count = 0
+        img_count = 0
+        for x in tqdm(data_loader_val):
+            x = x[0].to("cuda")
+            #print(x.tensors.shape)
+            # pass input through the model
+            start_time = time.time()
+            outputs = model(x)
+            total_time += time.time() - start_time
+            
+            # get the class labels and plot the image result
+            probas = outputs['pred_logits'].softmax(-1)[0, :, :-1]
+            keep = probas.max(-1).values > 0.9
+            
+            # undo the transformations on the input image
+            means = torch.tensor([0.485, 0.456, 0.406]).reshape(1, 3, 1, 1).cuda()
+            stds = torch.tensor([0.229, 0.224, 0.225]).reshape(1, 3, 1, 1).cuda()
+            x.tensors *= stds
+            x.tensors += means
+            
+            # scale the bounding boxes
+            from torchvision.transforms.functional import to_pil_image
+            im = to_pil_image(x.tensors[0])
+            bboxes_scaled = rescale_bboxes(outputs['pred_boxes'][0, keep], im.size)
+            
+            # plot the output image
+            fig = plot_results(im, probas[keep], bboxes_scaled)
+            img_path = os.path.join('inference_results', args.inference_dir, f"example{img_count}.png")
+            #print(img)
+            fig.savefig(img_path)#, dpi=300, bbox_inches='tight')
+            #save_image(img, img_path)
+            img_count += 1
+            
+        print(total_time)
+        average_batch_time_str = str(datetime.timedelta(seconds=total_time / (len(data_loader_val) - error_count)))
+        print(average_batch_time_str)
+            
+            
+        
 
 
 if __name__ == '__main__':
