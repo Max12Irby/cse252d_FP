@@ -12,3 +12,5 @@ You can start training after starting a gpu node from dsmlp-login by running thi
 # For replacing backbone + encoder with Swin
 ./kubesh-nostdin-TEMP.bash <Name of GPU node> -- bash cse252d_FP/detr_swin_encoder.sh &
 ```
+
+Run inference on the code with the following command: python main.py --coco_path=/datasets/COCO-2017 --analyze_inference --inference_dir=test_inf --batch_size=1 --epochs=0 --resume=backbone_checkpoint.pth
